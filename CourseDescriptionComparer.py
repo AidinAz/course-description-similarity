@@ -37,14 +37,14 @@ def _tfidf_cosine(clean1, clean2):
     score = float(cosine_similarity(matrix[0:1], matrix[1:2])[0][0])
     return round(score * 100, 1)
 
-def _keyword_overlap(text1, text2, top_n=25):
+def _keyword_overlap(clean1, clean2, top_n=25):
     def top_terms(text):
-        tokens = _preprocess(text).split()
+        tokens = text.split()
         unigrams = Counter(tokens)
         bigrams = Counter(f"{tokens[i]} {tokens[i+1]}" for i in range(len(tokens) - 1))
         return set(dict((unigrams + bigrams).most_common(top_n)))
 
-    kw1, kw2 = top_terms(text1), top_terms(text2)
+    kw1, kw2 = top_terms(clean1), top_terms(clean2)
     union = kw1 | kw2
     jaccard = round(len(kw1 & kw2) / len(union) * 100, 1) if union else 0.0
     return jaccard
@@ -70,7 +70,7 @@ def compare_two_courses_descriptions(first_text: str, second_text: str) -> dict[
     clean2 = _preprocess(second_text)
 
     tfidf_score = _tfidf_cosine(clean1, clean2)
-    kw_score = _keyword_overlap(first_text, second_text)
+    kw_score = _keyword_overlap(clean1, clean2)
     fuzzy = _fuzzy_scores(first_text, second_text)
 
     best_fuzzy = max(fuzzy.values())
