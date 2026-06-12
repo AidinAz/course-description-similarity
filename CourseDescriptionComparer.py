@@ -67,10 +67,6 @@ def compare_two_courses_descriptions(
     keyword_weight: float = 0.25,
     fuzzy_weight: float = 0.20,
 ) -> dict[str, float]:
-    """Compare two course descriptions and return a composite similarity score (0–100) plus sub-scores.
-
-    Weights must sum to 1.0. Adjust them to emphasise different similarity signals.
-    """
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError(
             "Both arguments must be strings; "
