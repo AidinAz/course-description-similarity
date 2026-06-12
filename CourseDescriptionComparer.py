@@ -59,12 +59,26 @@ def _fuzzy_scores(text1, text2):
     seq = difflib.SequenceMatcher(None, text1.lower(), text2.lower())
     return {"sequence_ratio": round(seq.ratio() * 100, 1)}
 
-def compare_two_courses_descriptions(first_text: str, second_text: str) -> dict[str, float]:
-    """Compare two course descriptions and return a composite similarity score (0–100) plus sub-scores."""
+def compare_two_courses_descriptions(
+    first_text: str,
+    second_text: str,
+    *,
+    tfidf_weight: float = 0.55,
+    keyword_weight: float = 0.25,
+    fuzzy_weight: float = 0.20,
+) -> dict[str, float]:
+    """Compare two course descriptions and return a composite similarity score (0–100) plus sub-scores.
+
+    Weights must sum to 1.0. Adjust them to emphasise different similarity signals.
+    """
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError(
             "Both arguments must be strings; "
             f"got {type(first_text).__name__!r} and {type(second_text).__name__!r}"
+        )
+    if abs(tfidf_weight + keyword_weight + fuzzy_weight - 1.0) > 0.001:
+        raise ValueError(
+            f"Weights must sum to 1.0; got {tfidf_weight + keyword_weight + fuzzy_weight}"
         )
     clean1 = _preprocess(first_text)
     clean2 = _preprocess(second_text)
@@ -74,7 +88,7 @@ def compare_two_courses_descriptions(first_text: str, second_text: str) -> dict[
     fuzzy = _fuzzy_scores(first_text, second_text)
 
     best_fuzzy = max(fuzzy.values())
-    composite = round(0.55 * tfidf_score + 0.25 * kw_score + 0.20 * best_fuzzy, 1)
+    composite = round(tfidf_weight * tfidf_score + keyword_weight * kw_score + fuzzy_weight * best_fuzzy, 1)
 
     return {
         "composite_score": composite,
