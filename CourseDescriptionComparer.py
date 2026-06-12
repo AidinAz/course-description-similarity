@@ -79,6 +79,17 @@ def compare_two_courses_descriptions(
     clean1 = _preprocess(first_text)
     clean2 = _preprocess(second_text)
 
+    if not clean1 or not clean2:
+        return {
+            "composite_score": 0.0,
+            "tfidf_cosine_similarity": 0.0,
+            "keyword_overlap_jaccard": 0.0,
+            "fuzzy_token_set_ratio": 0.0,
+            "fuzzy_token_sort_ratio": 0.0,
+            "fuzzy_partial_ratio": 0.0,
+            "warning": "One or both descriptions reduced to empty after preprocessing.",
+        }
+
     tfidf_score = _tfidf_cosine(clean1, clean2)
     kw_score = _keyword_overlap(clean1, clean2)
     fuzzy = _fuzzy_scores(clean1, clean2)
