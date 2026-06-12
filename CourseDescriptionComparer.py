@@ -81,7 +81,7 @@ def compare_two_courses_descriptions(
 
     tfidf_score = _tfidf_cosine(clean1, clean2)
     kw_score = _keyword_overlap(clean1, clean2)
-    fuzzy = _fuzzy_scores(first_text, second_text)
+    fuzzy = _fuzzy_scores(clean1, clean2)
 
     best_fuzzy = max(fuzzy.values())
     composite = round(tfidf_weight * tfidf_score + keyword_weight * kw_score + fuzzy_weight * best_fuzzy, 1)
