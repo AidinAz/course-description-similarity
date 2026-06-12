@@ -20,9 +20,8 @@ _STOP_WORDS = frozenset({
     'more', 'most', 'other', 'some', 'such', 'not', 'only', 'also',
     'include', 'including', 'course', 'students', 'topic', 'topics', 'key',
     'related', 'part', 'based', 'use', 'using', 'used', 'new', 'well',
-    'both', 'their', 'into', 'about', 'between', 'through',
+    'their', 'into', 'about', 'between', 'through',
 })
-
 
 def _preprocess(text):
     text = text.lower()
@@ -30,13 +29,13 @@ def _preprocess(text):
     tokens = [t for t in text.split() if t not in _STOP_WORDS and len(t) > 2]
     return ' '.join(tokens)
 
-
 def _tfidf_cosine(clean1, clean2):
+    if not clean1 or not clean2:
+        return 0.0
     vectorizer = TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True)
     matrix = vectorizer.fit_transform([clean1, clean2])
     score = float(cosine_similarity(matrix[0:1], matrix[1:2])[0][0])
     return round(score * 100, 1)
-
 
 def _keyword_overlap(text1, text2, top_n=25):
     def top_terms(text):
@@ -50,7 +49,6 @@ def _keyword_overlap(text1, text2, top_n=25):
     jaccard = round(len(kw1 & kw2) / len(union) * 100, 1) if union else 0.0
     return jaccard
 
-
 def _fuzzy_scores(text1, text2):
     if _RAPIDFUZZ:
         return {
@@ -61,8 +59,13 @@ def _fuzzy_scores(text1, text2):
     seq = difflib.SequenceMatcher(None, text1.lower(), text2.lower())
     return {"sequence_ratio": round(seq.ratio() * 100, 1)}
 
-
-def compare_two_courses_descriptions(first_text, second_text):
+def compare_two_courses_descriptions(first_text: str, second_text: str) -> dict[str, float]:
+    """Compare two course descriptions and return a composite similarity score (0–100) plus sub-scores."""
+    if not isinstance(first_text, str) or not isinstance(second_text, str):
+        raise TypeError(
+            "Both arguments must be strings; "
+            f"got {type(first_text).__name__!r} and {type(second_text).__name__!r}"
+        )
     clean1 = _preprocess(first_text)
     clean2 = _preprocess(second_text)
 
@@ -80,19 +83,19 @@ def compare_two_courses_descriptions(first_text, second_text):
         **{f"fuzzy_{k}": v for k, v in fuzzy.items()},
     }
 
-
-course_first_text = """
+if __name__ == "__main__":
+    course_first_text = """
 First Course Description...
 """
 
-course_second_text = """
+    course_second_text = """
 Second Course Description...
 """
 
-scores = compare_two_courses_descriptions(course_first_text, course_second_text)
+    scores = compare_two_courses_descriptions(course_first_text, course_second_text)
 
-print(f"\n{'=' * 50}")
-print("Course Similarity Analysis")
-print('=' * 50)
-for method, value in scores.items():
-    print(f"{method}: {value}")
+    print(f"\n{'=' * 50}")
+    print("Course Similarity Analysis")
+    print('=' * 50)
+    for method, value in scores.items():
+        print(f"{method}: {value}")
