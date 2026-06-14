@@ -1,44 +1,59 @@
 # Course Description Comparator
 
-A lightweight Python tool that measures semantic similarity between two course descriptions using three complementary NLP methods combined into a single composite score.
+A Python toolkit for comparing course descriptions using two complementary approaches: a fast statistical NLP scorer (`CourseDescriptionComparer`) and an LLM-based qualitative analyser (`CourseLLMComparer`).
 
 ---
 
 ## How It Works
 
-The comparison pipeline runs three independent analyses and blends them into one score:
+### Statistical Comparer (`CourseDescriptionComparer.py`)
+
+Runs three independent NLP analyses and blends them into one composite score:
 
 | Method | Weight | Description |
 |---|---|---|
-| TF-IDF Cosine Similarity | 55% | Measures vocabulary overlap weighted by term importance across both texts |
-| Keyword Overlap (Jaccard) | 25% | Compares top unigrams and bigrams extracted from each description |
-| Fuzzy String Matching | 20% | Catches paraphrasing and reordered content using token-based fuzzy ratios |
+| TF-IDF Cosine Similarity | 40% | Measures vocabulary overlap weighted by term importance across both texts |
+| Keyword Overlap (Jaccard) | 20% | Compares top unigrams and bigrams extracted from each description |
+| Fuzzy String Matching | 40% | Catches paraphrasing and reordered content using token-based fuzzy ratios |
 
 **Composite score formula:**
 ```
-composite = 0.55 × tfidf + 0.25 × keyword_jaccard + 0.20 × best_fuzzy
+composite = 0.40 × tfidf + 0.20 × keyword_jaccard + 0.40 × best_fuzzy
 ```
 
 All scores are on a **0–100 scale**.
+
+### LLM Comparer (`CourseLLMComparer.py`)
+
+Sends both descriptions to an OpenAI-compatible LLM and returns a structured qualitative analysis covering:
+
+1. **Shared Topics** — content or skills covered by both courses
+2. **Unique to Course 1** — topics present only in the first description
+3. **Unique to Course 2** — topics present only in the second description
+4. **Overall Assessment** — a qualitative judgment of how similar or different the courses are
 
 ---
 
 ## Requirements
 
 ```
-scikit-learn
-rapidfuzz        # optional but recommended — falls back to difflib if missing
+scikit-learn==1.9.0
+rapidfuzz==3.14.5        # falls back to difflib if missing
+openai>=1.0.0            # required for CourseLLMComparer only
+python-dotenv>=1.0.0     # required for CourseLLMComparer only
 ```
 
-Install dependencies:
+Install all dependencies:
 
 ```bash
-pip install scikit-learn rapidfuzz
+pip install -r requirements.txt
 ```
 
 ---
 
 ## Usage
+
+### Statistical Comparer
 
 Edit the placeholder texts in `CourseDescriptionComparer.py`:
 
@@ -76,11 +91,46 @@ fuzzy_token_sort_ratio: 79.3
 fuzzy_partial_ratio: 85.0
 ```
 
+### LLM-Based Comparer
+
+Create a `.env` file in the project root:
+
+```
+LLM_API_KEY=your_api_key_here
+LLM_BASE_URL=https://your-llm-endpoint/v1
+LLM_MODEL=meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo   # optional, this is the default
+```
+
+Edit the placeholder texts in `CourseLLMComparer.py` and run:
+
+```bash
+python CourseLLMComparer.py
+```
+
+**Example output:**
+
+```
+==================================================
+LLM Course Comparison Analysis
+==================================================
+**Shared Topics:** Both courses cover core machine learning concepts including
+supervised learning, neural networks, and practical/hands-on application.
+
+**Unique to Course 1:** Explicit focus on unsupervised learning and model evaluation.
+
+**Unique to Course 2:** Emphasis on regression, classification, clustering as distinct
+topics, and deep learning basics as a separate subject area.
+
+**Overall Assessment:** The courses are moderately similar, sharing a common ML
+foundation, but Course 2 breaks topics into more granular categories while
+Course 1 takes a broader survey approach.
+```
+
 ---
 
 ## Using as a Library
 
-Import the comparison function directly into your own code:
+### Statistical Comparer
 
 ```python
 from CourseDescriptionComparer import compare_two_courses_descriptions
@@ -91,9 +141,42 @@ print(result["composite_score"])  # e.g. 72.4
 
 The function returns a dictionary with all individual scores alongside the composite.
 
+### LLM Comparer
+
+```python
+from CourseLLMComparer import compare_courses_with_llm
+
+analysis = compare_courses_with_llm(desc_a, desc_b)
+print(analysis)  # qualitative text analysis
+```
+
+API credentials can also be passed directly instead of via `.env`:
+
+```python
+analysis = compare_courses_with_llm(
+    desc_a, desc_b,
+    api_key="...",
+    base_url="https://your-llm-endpoint/v1",
+    model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+)
+```
+
+---
+
+## Choosing Between the Two Tools
+
+| | `CourseDescriptionComparer.py` | `CourseLLMComparer.py` |
+|---|---|---|
+| **Output** | Numeric score (0–100) | Qualitative text analysis |
+| **Speed** | Fast (local, no API) | Slower (external API call) |
+| **LLM required** | No | Yes |
+| **Best for** | Quick screening / bulk comparison | Deep qualitative review |
+
 ---
 
 ## Interpreting Scores
+
+*(Applies to the statistical comparer.)*
 
 | Composite Score | Interpretation |
 |---|---|

@@ -63,9 +63,9 @@ def compare_two_courses_descriptions(
     first_text: str,
     second_text: str,
     *,
-    tfidf_weight: float = 0.55,
-    keyword_weight: float = 0.25,
-    fuzzy_weight: float = 0.20,
+    tfidf_weight: float = 0.40,
+    keyword_weight: float = 0.20,
+    fuzzy_weight: float = 0.40,
 ) -> dict[str, float]:
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError(
