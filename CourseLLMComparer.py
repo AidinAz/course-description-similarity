@@ -23,6 +23,11 @@ def compare_courses_with_llm(
     base_url: str | None = None,
     model: str | None = None,
 ) -> str:
+    if not isinstance(first_text, str) or not isinstance(second_text, str):
+        raise TypeError("Both course descriptions must be strings.")
+    if not first_text.strip() or not second_text.strip():
+        raise ValueError("Both course descriptions must be non-empty.")
+
     resolved_key = api_key or os.environ.get("LLM_API_KEY")
     resolved_url = base_url or os.environ.get("LLM_BASE_URL")
     resolved_model = model or os.environ.get("LLM_MODEL", "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo")
