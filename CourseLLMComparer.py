@@ -5,7 +5,7 @@ from openai import OpenAI
 load_dotenv()
 
 _SYSTEM_PROMPT = """\
-You are an academic course analyst. Given two course descriptions, provide a concise analysis with three sections:
+You are an academic course analyst. Given two course descriptions, provide a concise analysis with four sections:
 1. Shared Topics - content or skills covered by both courses
 2. Unique to Course 1 - topics or emphases present only in the first description
 3. Unique to Course 2 - topics or emphases present only in the second description
@@ -47,7 +47,10 @@ def compare_courses_with_llm(
         ],
     )
 
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    if content is None:
+        raise RuntimeError("LLM returned no text content.")
+    return content
 
 
 if __name__ == "__main__":
