@@ -5,11 +5,12 @@ from openai import OpenAI
 load_dotenv()
 
 _SYSTEM_PROMPT = """\
-You are an academic course analyst. Given two course descriptions, provide a concise analysis with four sections:
+You are an academic course analyst. Given two course descriptions, provide a concise analysis with five sections:
 1. Shared Topics - content or skills covered by both courses
 2. Unique to Course 1 - topics or emphases present only in the first description
 3. Unique to Course 2 - topics or emphases present only in the second description
 4. Overall Assessment - a brief qualitative judgment of how similar or different the courses are
+5. Similarity Score - a single integer from 0 to 100 representing how similar the two courses are (0 = completely unrelated, 100 = identical), formatted exactly as: "Similarity Score: <number>/100"
 
 Be specific and reference the actual subject matter from the descriptions.\
 """
