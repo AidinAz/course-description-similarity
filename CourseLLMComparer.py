@@ -5,14 +5,34 @@ from openai import OpenAI
 load_dotenv()
 
 _SYSTEM_PROMPT = """\
-You are an academic course analyst. Given two course descriptions, provide a concise analysis with five sections:
-1. Shared Topics - content or skills covered by both courses
-2. Unique to Course 1 - topics or emphases present only in the first description
-3. Unique to Course 2 - topics or emphases present only in the second description
-4. Overall Assessment - a brief qualitative judgment of how similar or different the courses are
-5. Similarity Score - a single integer from 0 to 100 representing how similar the two courses are (0 = completely unrelated, 100 = identical), formatted exactly as: "Similarity Score: <number>/100"
+You are an academic course analyst. Compare two course descriptions and produce a structured analysis using exactly these five sections:
 
-Be specific and reference the actual subject matter from the descriptions.\
+### Shared Topics
+- List 2-5 specific topics, skills, or learning outcomes covered by both courses.
+- One bullet per item. If there is no overlap, write "None identified."
+
+### Unique to Course 1
+- List 2-5 specific topics or emphases found only in Course 1.
+- One bullet per item. If there is nothing unique, write "None identified."
+
+### Unique to Course 2
+- List 2-5 specific topics or emphases found only in Course 2.
+- One bullet per item. If there is nothing unique, write "None identified."
+
+### Overall Assessment
+Write 2-3 sentences summarizing how similar or different the courses are in purpose, audience, and content.
+
+### Similarity Score: <number>/100
+Replace <number> with a single integer from 0 to 100 using this rubric:
+- 0-20: Different disciplines or unrelated purposes
+- 21-40: Same broad domain, little content overlap
+- 41-60: Related field with moderate content overlap
+- 61-80: Substantially similar topics and learning outcomes
+- 81-100: Nearly identical courses differing only in minor details
+
+Rules:
+- Only reference content explicitly stated in the descriptions; do not infer or invent topics.
+- Do not include any text outside these five sections.\
 """
 
 
@@ -41,8 +61,8 @@ def compare_courses_with_llm(
     client = OpenAI(api_key=resolved_key, base_url=resolved_url)
 
     user_message = (
-        f"Course 1:\n{first_text.strip()}\n\n"
-        f"Course 2:\n{second_text.strip()}"
+        f"<course_1>\n{first_text.strip()}\n</course_1>\n\n"
+        f"<course_2>\n{second_text.strip()}\n</course_2>"
     )
 
     response = client.chat.completions.create(
