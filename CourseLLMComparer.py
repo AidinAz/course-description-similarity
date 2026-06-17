@@ -43,6 +43,8 @@ def compare_courses_with_llm(
     api_key: str | None = None,
     base_url: str | None = None,
     model: str | None = None,
+    timeout: float = 60.0,
+    max_retries: int = 2,
 ) -> str:
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError("Both course descriptions must be strings.")
@@ -58,7 +60,7 @@ def compare_courses_with_llm(
     if not resolved_url:
         raise ValueError("No base URL found. Set LLM_BASE_URL in .env or pass base_url=")
 
-    client = OpenAI(api_key=resolved_key, base_url=resolved_url)
+    client = OpenAI(api_key=resolved_key, base_url=resolved_url, max_retries=max_retries)
 
     user_message = (
         f"<course_1>\n{first_text.strip()}\n</course_1>\n\n"
@@ -71,6 +73,7 @@ def compare_courses_with_llm(
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
+        timeout=timeout,
     )
 
     content = response.choices[0].message.content
