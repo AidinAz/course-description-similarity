@@ -42,7 +42,7 @@ def compare_courses_with_llm(
     api_key: str | None = None,
     base_url: str | None = None,
     model: str | None = None,
-    temperature: float = 0.2,
+    temperature: float = 0.0,
     max_tokens: int | None = None,
     timeout: float = 60.0,
     max_retries: int = 2,
