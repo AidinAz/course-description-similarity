@@ -43,6 +43,8 @@ def compare_courses_with_llm(
     api_key: str | None = None,
     base_url: str | None = None,
     model: str | None = None,
+    temperature: float = 0.2,
+    max_tokens: int | None = None,
     timeout: float = 60.0,
     max_retries: int = 2,
 ) -> str:
@@ -67,14 +69,19 @@ def compare_courses_with_llm(
         f"<course_2>\n{second_text.strip()}\n</course_2>"
     )
 
-    response = client.chat.completions.create(
+    create_kwargs: dict = dict(
         model=resolved_model,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
+        temperature=temperature,
         timeout=timeout,
     )
+    if max_tokens is not None:
+        create_kwargs["max_tokens"] = max_tokens
+
+    response = client.chat.completions.create(**create_kwargs)
 
     content = response.choices[0].message.content
     if content is None:
