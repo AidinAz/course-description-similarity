@@ -35,7 +35,6 @@ Rules:
 - Do not include any text outside these five sections.\
 """
 
-
 def compare_courses_with_llm(
     first_text: str,
     second_text: str,
@@ -88,7 +87,6 @@ def compare_courses_with_llm(
         raise RuntimeError("LLM returned no text content.")
     return content
 
-
 if __name__ == "__main__":
     course_first_text = """
     First course description...
@@ -104,3 +102,4 @@ if __name__ == "__main__":
     print("LLM Course Comparison Analysis")
     print('=' * 50)
     print(analysis)
+
