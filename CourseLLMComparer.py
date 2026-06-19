@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, APIConnectionError, APIStatusError
 
 load_dotenv()
 
@@ -80,7 +80,12 @@ def compare_courses_with_llm(
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
 
-    response = client.chat.completions.create(**create_kwargs)
+    try:
+        response = client.chat.completions.create(**create_kwargs)
+    except APIStatusError as e:
+        raise RuntimeError(f"LLM API error {e.status_code}: {e.message}") from e
+    except APIConnectionError as e:
+        raise RuntimeError(f"Could not connect to LLM endpoint: {e}") from e
 
     content = response.choices[0].message.content
     if content is None:
