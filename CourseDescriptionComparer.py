@@ -52,9 +52,9 @@ def _keyword_overlap(clean1, clean2, top_n=25):
 def _fuzzy_scores(text1, text2):
     if _RAPIDFUZZ:
         return {
-            "token_set_ratio": _fuzz.token_set_ratio(text1, text2),
-            "token_sort_ratio": _fuzz.token_sort_ratio(text1, text2),
-            "partial_ratio": _fuzz.partial_ratio(text1, text2),
+            "token_set_ratio": round(_fuzz.token_set_ratio(text1, text2), 1),
+            "token_sort_ratio": round(_fuzz.token_sort_ratio(text1, text2), 1),
+            "partial_ratio": round(_fuzz.partial_ratio(text1, text2), 1),
         }
     seq = difflib.SequenceMatcher(None, text1.lower(), text2.lower())
     return {"sequence_ratio": round(seq.ratio() * 100, 1)}
@@ -66,12 +66,14 @@ def compare_two_courses_descriptions(
     tfidf_weight: float = 0.40,
     keyword_weight: float = 0.20,
     fuzzy_weight: float = 0.40,
-) -> dict[str, float]:
+) -> dict[str, float | str]:
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError(
             "Both arguments must be strings; "
             f"got {type(first_text).__name__!r} and {type(second_text).__name__!r}"
         )
+    if not first_text.strip() or not second_text.strip():
+        raise ValueError("Both course descriptions must be non-empty.")
     if abs(tfidf_weight + keyword_weight + fuzzy_weight - 1.0) > 0.001:
         raise ValueError(
             f"Weights must sum to 1.0; got {tfidf_weight + keyword_weight + fuzzy_weight}"
@@ -80,13 +82,12 @@ def compare_two_courses_descriptions(
     clean2 = _preprocess(second_text)
 
     if not clean1 or not clean2:
+        fuzzy_zeros = {f"fuzzy_{k}": 0.0 for k in _fuzzy_scores("a", "a")}
         return {
             "composite_score": 0.0,
             "tfidf_cosine_similarity": 0.0,
             "keyword_overlap_jaccard": 0.0,
-            "fuzzy_token_set_ratio": 0.0,
-            "fuzzy_token_sort_ratio": 0.0,
-            "fuzzy_partial_ratio": 0.0,
+            **fuzzy_zeros,
             "warning": "One or both descriptions reduced to empty after preprocessing.",
         }
 
