@@ -46,11 +46,17 @@ def compare_courses_with_llm(
     max_tokens: int | None = None,
     timeout: float = 60.0,
     max_retries: int = 2,
+    max_chars: int = 20_000,
 ) -> str:
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError("Both course descriptions must be strings.")
     if not first_text.strip() or not second_text.strip():
         raise ValueError("Both course descriptions must be non-empty.")
+    if len(first_text.strip()) + len(second_text.strip()) > max_chars:
+        raise ValueError(
+            f"Combined course descriptions exceed {max_chars:,} characters "
+            f"(~5,000 tokens). Truncate the inputs before calling this function."
+        )
 
     resolved_key = api_key or os.environ.get("LLM_API_KEY")
     resolved_url = base_url or os.environ.get("LLM_BASE_URL")
