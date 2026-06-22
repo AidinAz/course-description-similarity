@@ -31,6 +31,7 @@ Sends both descriptions to an OpenAI-compatible LLM and returns a structured qua
 2. **Unique to Course 1** — topics present only in the first description
 3. **Unique to Course 2** — topics present only in the second description
 4. **Overall Assessment** — a qualitative judgment of how similar or different the courses are
+5. **Similarity Score** — a numeric score from 0–100 using a defined rubric
 
 ---
 
@@ -113,17 +114,23 @@ python CourseLLMComparer.py
 ==================================================
 LLM Course Comparison Analysis
 ==================================================
-**Shared Topics:** Both courses cover core machine learning concepts including
-supervised learning, neural networks, and practical/hands-on application.
+### Shared Topics
+- Core machine learning concepts (supervised learning, neural networks)
+- Practical/hands-on application
 
-**Unique to Course 1:** Explicit focus on unsupervised learning and model evaluation.
+### Unique to Course 1
+- Explicit focus on unsupervised learning
+- Model evaluation
 
-**Unique to Course 2:** Emphasis on regression, classification, clustering as distinct
-topics, and deep learning basics as a separate subject area.
+### Unique to Course 2
+- Regression, classification, and clustering as distinct topics
+- Deep learning basics as a separate subject area
 
-**Overall Assessment:** The courses are moderately similar, sharing a common ML
-foundation, but Course 2 breaks topics into more granular categories while
-Course 1 takes a broader survey approach.
+### Overall Assessment
+The courses are moderately similar, sharing a common ML foundation, but Course 2
+breaks topics into more granular categories while Course 1 takes a broader survey approach.
+
+### Similarity Score: 65/100
 ```
 
 ---
