@@ -107,12 +107,12 @@ def compare_two_courses_descriptions(
 
 if __name__ == "__main__":
     course_first_text = """
-First Course Description...
-"""
+    First course description...
+    """
 
     course_second_text = """
-Second Course Description...
-"""
+    Second course description...
+    """
 
     scores = compare_two_courses_descriptions(course_first_text, course_second_text)
 

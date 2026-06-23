@@ -1,12 +1,12 @@
 # Course Description Comparator
 
-A Python toolkit for comparing course descriptions using two complementary approaches: a fast statistical NLP scorer (`CourseDescriptionComparer`) and an LLM-based qualitative analyser (`CourseLLMComparer`).
+A Python toolkit for comparing course descriptions using two complementary approaches: a fast statistical NLP scorer (`CourseStatisticalComparer`) and an LLM-based qualitative analyser (`CourseLLMComparer`).
 
 ---
 
 ## How It Works
 
-### Statistical Comparer (`CourseDescriptionComparer.py`)
+### Statistical Comparer (`CourseStatisticalComparer.py`)
 
 Runs three independent NLP analyses and blends them into one composite score:
 
@@ -56,7 +56,7 @@ pip install -r requirements.txt
 
 ### Statistical Comparer
 
-Edit the placeholder texts in `CourseDescriptionComparer.py`:
+Edit the placeholder texts in `CourseStatisticalComparer.py`:
 
 ```python
 course_first_text = """
@@ -75,7 +75,7 @@ scores = compare_two_courses_descriptions(course_first_text, course_second_text)
 Run the script:
 
 ```bash
-python CourseDescriptionComparer.py
+python CourseStatisticalComparer.py
 ```
 
 **Example output:**
@@ -140,7 +140,7 @@ breaks topics into more granular categories while Course 1 takes a broader surve
 ### Statistical Comparer
 
 ```python
-from CourseDescriptionComparer import compare_two_courses_descriptions
+from CourseStatisticalComparer import compare_two_courses_descriptions
 
 result = compare_two_courses_descriptions(desc_a, desc_b)
 print(result["composite_score"])  # e.g. 72.4
@@ -172,7 +172,7 @@ analysis = compare_courses_with_llm(
 
 ## Choosing Between the Two Tools
 
-| | `CourseDescriptionComparer.py` | `CourseLLMComparer.py` |
+| | `CourseStatisticalComparer.py` | `CourseLLMComparer.py` |
 |---|---|---|
 | **Output** | Numeric score (0–100) | Qualitative text analysis |
 | **Speed** | Fast (local, no API) | Slower (external API call) |
