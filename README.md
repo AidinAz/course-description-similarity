@@ -84,7 +84,7 @@ python CourseDescriptionComparer.py
 ==================================================
 Course Similarity Analysis
 ==================================================
-composite_score: 72.4
+composite_score: 76.1
 tfidf_cosine_similarity: 68.1
 keyword_overlap_jaccard: 74.5
 fuzzy_token_set_ratio: 81.0
