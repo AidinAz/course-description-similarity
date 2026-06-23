@@ -26,7 +26,7 @@ _STOP_WORDS = frozenset({
 def _preprocess(text):
     text = text.lower()
     text = re.sub(r'[^a-z0-9\s]', ' ', text)
-    tokens = [t for t in text.split() if t not in _STOP_WORDS and len(t) > 2]
+    tokens = [t for t in text.split() if t not in _STOP_WORDS and len(t) > 1]
     return ' '.join(tokens)
 
 def _tfidf_cosine(clean1, clean2):
