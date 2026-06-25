@@ -21,7 +21,7 @@ def _embed(texts: list[str], model_name: str) -> np.ndarray:
 
 
 def _split_sentences(text: str) -> list[str]:
-    parts = re.split(r'(?<=[.!?])\s+', text)
+    parts = re.split(r'(?<=[.!?])\s+(?=[A-Z])', text)
     return [p.strip() for p in parts if len(p.strip()) >= 10]
 
 
