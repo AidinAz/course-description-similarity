@@ -1,6 +1,6 @@
 # Course Description Comparator
 
-A Python toolkit for comparing course descriptions using two complementary approaches: a fast statistical NLP scorer (`CourseStatisticalComparer`) and an LLM-based qualitative analyser (`CourseLLMComparer`).
+A Python toolkit for comparing course descriptions using three complementary approaches: a fast statistical NLP scorer (`CourseStatisticalComparer`), a semantic embedding comparer (`CourseEmbeddingComparer`), and an LLM-based qualitative analyser (`CourseLLMComparer`).
 
 ---
 
@@ -23,6 +23,22 @@ composite = 0.40 × tfidf + 0.20 × keyword_jaccard + 0.40 × best_fuzzy
 
 All scores are on a **0–100 scale**.
 
+### Embedding Comparer (`CourseEmbeddingComparer.py`)
+
+Encodes descriptions with a sentence-transformer model and blends two semantic scores:
+
+| Method | Weight | Description |
+|---|---|---|
+| Full-text Cosine | 60% | Embeds each full description and computes cosine similarity |
+| Sentence Alignment | 40% | Bidirectional best-match similarity across individual sentences |
+
+**Composite score formula:**
+```
+composite = 0.60 × full_text_cosine + 0.40 × sentence_alignment
+```
+
+All scores are on a **0–100 scale**. Default model: `all-MiniLM-L6-v2` (downloaded once, then cached locally).
+
 ### LLM Comparer (`CourseLLMComparer.py`)
 
 Sends both descriptions to an OpenAI-compatible LLM and returns a structured qualitative analysis covering:
@@ -39,9 +55,10 @@ Sends both descriptions to an OpenAI-compatible LLM and returns a structured qua
 
 ```
 scikit-learn==1.9.0
-rapidfuzz==3.14.5        # falls back to difflib if missing
-openai>=1.0.0            # required for CourseLLMComparer only
-python-dotenv>=1.0.0     # required for CourseLLMComparer only
+rapidfuzz==3.14.5              # falls back to difflib if missing
+sentence-transformers>=3.0.0   # required for CourseEmbeddingComparer only
+openai>=1.0.0                  # required for CourseLLMComparer only
+python-dotenv>=1.0.0           # required for CourseLLMComparer only
 ```
 
 Install all dependencies:
@@ -90,6 +107,26 @@ keyword_overlap_jaccard: 74.5
 fuzzy_token_set_ratio: 81.0
 fuzzy_token_sort_ratio: 79.3
 fuzzy_partial_ratio: 85.0
+```
+
+### Embedding Comparer
+
+Edit the placeholder texts in `CourseEmbeddingComparer.py` and run:
+
+```bash
+python CourseEmbeddingComparer.py
+```
+
+**Example output:**
+
+```
+==================================================
+Embedding-Based Course Similarity
+==================================================
+composite_score: 74.3
+full_text_cosine: 71.5
+sentence_alignment: 78.8
+model: all-MiniLM-L6-v2
 ```
 
 ### LLM-Based Comparer
@@ -148,6 +185,26 @@ print(result["composite_score"])  # e.g. 72.4
 
 The function returns a dictionary with all individual scores alongside the composite.
 
+### Embedding Comparer
+
+```python
+from CourseEmbeddingComparer import compare_two_courses_descriptions
+
+result = compare_two_courses_descriptions(desc_a, desc_b)
+print(result["composite_score"])  # e.g. 74.3
+```
+
+Optional keyword arguments:
+
+```python
+result = compare_two_courses_descriptions(
+    desc_a, desc_b,
+    model="all-MiniLM-L6-v2",  # any sentence-transformers model
+    full_text_weight=0.60,
+    sentence_weight=0.40,        # must sum to 1.0 with full_text_weight
+)
+```
+
 ### LLM Comparer
 
 ```python
@@ -170,20 +227,20 @@ analysis = compare_courses_with_llm(
 
 ---
 
-## Choosing Between the Two Tools
+## Choosing Between the Three Tools
 
-| | `CourseStatisticalComparer.py` | `CourseLLMComparer.py` |
-|---|---|---|
-| **Output** | Numeric score (0–100) | Qualitative text analysis |
-| **Speed** | Fast (local, no API) | Slower (external API call) |
-| **LLM required** | No | Yes |
-| **Best for** | Quick screening / bulk comparison | Deep qualitative review |
+| | `CourseStatisticalComparer.py` | `CourseEmbeddingComparer.py` | `CourseLLMComparer.py` |
+|---|---|---|---|
+| **Output** | Numeric score (0–100) | Numeric score (0–100) | Qualitative text analysis |
+| **Speed** | Fast (local, no API) | Medium (local; first run downloads model) | Slower (external API call) |
+| **LLM required** | No | No | Yes |
+| **Best for** | Keyword overlap / bulk screening | Semantic similarity | Deep qualitative review |
 
 ---
 
 ## Interpreting Scores
 
-*(Applies to the statistical comparer.)*
+*(Applies to the statistical and embedding comparers.)*
 
 | Composite Score | Interpretation |
 |---|---|
