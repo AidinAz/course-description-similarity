@@ -30,8 +30,9 @@ def _full_text_cosine(emb1: np.ndarray, emb2: np.ndarray) -> float:
 
 
 def _sentence_alignment(sents1: list[str], sents2: list[str], model_name: str) -> float:
-    emb1 = _embed(sents1, model_name)
-    emb2 = _embed(sents2, model_name)
+    all_embs = _embed(sents1 + sents2, model_name)
+    emb1 = all_embs[:len(sents1)]
+    emb2 = all_embs[len(sents1):]
     sim_matrix = emb1 @ emb2.T
     forward = float(sim_matrix.max(axis=1).mean())
     backward = float(sim_matrix.max(axis=0).mean())
