@@ -35,6 +35,14 @@ Rules:
 - Do not include any text outside these five sections.\
 """
 
+_REQUIRED_SECTIONS = (
+    "### Shared Topics",
+    "### Unique to Course 1",
+    "### Unique to Course 2",
+    "### Overall Assessment",
+    "### Similarity Score",
+)
+
 def compare_courses_with_llm(
     first_text: str,
     second_text: str,
@@ -96,6 +104,12 @@ def compare_courses_with_llm(
     content = response.choices[0].message.content
     if content is None:
         raise RuntimeError("LLM returned no text content.")
+    missing = [s for s in _REQUIRED_SECTIONS if s not in content]
+    if missing:
+        raise RuntimeError(
+            "LLM response is missing required sections: "
+            + ", ".join(missing)
+        )
     return content
 
 if __name__ == "__main__":
