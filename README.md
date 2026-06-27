@@ -185,6 +185,17 @@ print(result["composite_score"])  # e.g. 72.4
 
 The function returns a dictionary with all individual scores alongside the composite.
 
+Optional keyword arguments:
+
+```python
+result = compare_two_courses_descriptions(
+    desc_a, desc_b,
+    tfidf_weight=0.40,
+    keyword_weight=0.20,
+    fuzzy_weight=0.40,    # must sum to 1.0 with the other two weights
+)
+```
+
 ### Embedding Comparer
 
 ```python
