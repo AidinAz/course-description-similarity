@@ -46,7 +46,7 @@ def compare_two_courses_descriptions(
     model: str = _DEFAULT_MODEL,
     full_text_weight: float = 0.60,
     sentence_weight: float = 0.40,
-) -> dict[str, float | str | bool]:
+) -> dict[str, float | str | bool | None]:
     if not isinstance(first_text, str) or not isinstance(second_text, str):
         raise TypeError(
             "Both arguments must be strings; "
@@ -69,9 +69,12 @@ def compare_two_courses_descriptions(
     sents2 = _split_sentences(t2)
 
     sentence_alignment_used = len(sents1) >= 2 and len(sents2) >= 2
-    sa_score = _sentence_alignment(sents1, sents2, model) if sentence_alignment_used else ft_score
-
-    composite = round(full_text_weight * ft_score + sentence_weight * sa_score, 1)
+    if sentence_alignment_used:
+        sa_score = _sentence_alignment(sents1, sents2, model)
+        composite = round(full_text_weight * ft_score + sentence_weight * sa_score, 1)
+    else:
+        sa_score = None
+        composite = ft_score
 
     return {
         "composite_score": composite,
