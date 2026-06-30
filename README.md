@@ -39,6 +39,21 @@ composite = 0.60 × full_text_cosine + 0.40 × sentence_alignment
 
 All scores are on a **0–100 scale**. Default model: `all-MiniLM-L6-v2` (downloaded once, then cached locally).
 
+#### One-sided "coverage" mode
+
+The default comparison is **symmetric** — it answers *"how similar are these two descriptions?"* That penalises a candidate covering **broader** material, because the extra topics dilute the whole-text similarity (a strict superset can score *lower* than its subset).
+
+Pass `direction="coverage"` to score **one-sidedly** instead — *"are `first_text`'s topics covered by `second_text`?"* For each topic in the first (original) description it asks a **cross-encoder NLI model** whether any topic in the second description *entails* (covers) it, then averages the best per-topic entailment scores. Entailment — rather than plain embedding cosine — is used here because cosine only measures *topical relatedness* and over-counts same-domain-but-distinct topics (e.g. *"Overview of computers and programming"* vs *"Control Structures"*) as covered. Adding more topics to the candidate can only raise this score, so broader coverage is never punished. The cross-encoder model (`cross-encoder/nli-deberta-v3-xsmall`, configurable via `coverage_model`) is downloaded once, then cached locally.
+
+| Field | Meaning |
+|---|---|
+| `coverage_score` | Directional coverage of `first_text`'s topics by `second_text` (0–100). Becomes the `composite_score` when `direction="coverage"`. |
+| `topics_covered` / `topics_total` | How many of the original topics are entailed above `coverage_threshold` (entailment probability, default `0.5`) — e.g. *4 of 6 covered*. |
+| `fully_covered` | `True` when **every** original topic is entailed above threshold (`topics_covered == topics_total`) — the direct yes/no for *"does `second_text` fully cover `first_text`?"* `False` whenever any topic is missing. |
+| `uncovered_topics` | The list of original topics (from `first_text`) with **no** entailment above threshold in `second_text` — i.e. exactly what the other description is missing. Empty when `fully_covered` is `True`. |
+
+In coverage mode `composite_score = coverage_score` exactly — there is **no** full-text blend, since any blend would re-introduce the dilution it is meant to remove (`full_text_weight` / `sentence_weight` are ignored). The coverage fields are always present in the output, in both modes. Topic splitting understands comma-, semicolon-, newline- and bullet-separated lists and keeps parenthetical lists such as `Program Design (Sequence, Decision & Repetition Structures)` intact.
+
 ### LLM Comparer (`CourseLLMComparer.py`)
 
 Sends both descriptions to an OpenAI-compatible LLM and returns a structured qualitative analysis covering:
@@ -117,15 +132,38 @@ Edit the placeholder texts in `CourseEmbeddingComparer.py` and run:
 python CourseEmbeddingComparer.py
 ```
 
-**Example output:**
+**Example output** (the demo asks whether the *other* module covers the original — `fully_covered` and `uncovered_topics` give the verdict directly; a symmetric run is shown only for contrast):
 
 ```
 ==================================================
-Embedding-Based Course Similarity
+Coverage — does the other module cover the original?
 ==================================================
-composite_score: 74.3
-full_text_cosine: 71.5
-sentence_alignment: 78.8
+composite_score: 76.7          # one-sided: two original topics are missing
+full_text_cosine: 86.8
+sentence_alignment: None
+sentence_alignment_used: False
+coverage_score: 76.7
+coverage_used: True
+fully_covered: False           # not every original topic is entailed
+topics_covered: 4
+topics_total: 6
+uncovered_topics: ['Overview of computers and programming', 'overview of C']
+direction: coverage
+model: all-MiniLM-L6-v2
+==================================================
+Symmetric (for contrast only) — original vs other module
+==================================================
+composite_score: 86.8          # other module penalised by dilution — wrong lens here
+full_text_cosine: 86.8
+sentence_alignment: None
+sentence_alignment_used: False
+coverage_score: 76.7
+coverage_used: True
+fully_covered: False
+topics_covered: 4
+topics_total: 6
+uncovered_topics: ['Overview of computers and programming', 'overview of C']
+direction: symmetric
 model: all-MiniLM-L6-v2
 ```
 
@@ -214,6 +252,21 @@ result = compare_two_courses_descriptions(
     full_text_weight=0.60,
     sentence_weight=0.40,        # must sum to 1.0 with full_text_weight
 )
+```
+
+For **one-sided coverage** — *"are `desc_a`'s topics covered by `desc_b`?"* — pass `direction="coverage"`:
+
+```python
+result = compare_two_courses_descriptions(
+    desc_a, desc_b,
+    direction="coverage",        # composite_score = coverage_score (one-sided)
+    coverage_model="cross-encoder/nli-deberta-v3-xsmall",  # any NLI cross-encoder
+    coverage_threshold=0.5,      # entailment probability above which a topic counts as "covered"
+)
+print(result["coverage_score"])                                # e.g. 88.0
+print(result["topics_covered"], "of", result["topics_total"])  # e.g. 5 of 6
+print(result["fully_covered"])                                 # True only if desc_b covers every desc_a topic
+print(result["uncovered_topics"])                              # e.g. ['recursion'] — what desc_b is missing
 ```
 
 ### LLM Comparer
