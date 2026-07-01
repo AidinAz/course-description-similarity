@@ -135,7 +135,7 @@ Edit the placeholder texts in `CourseEmbeddingComparer.py` and run:
 python CourseEmbeddingComparer.py
 ```
 
-**Example output** (the demo asks whether the *other* module covers the original — `fully_covered` and `uncovered_topics` give the verdict directly; a symmetric run is shown only for contrast):
+**Example output** (the demo runs three reports — coverage of the original by the *other* module, coverage by an *identical* module, and a symmetric run for contrast; `fully_covered` and `uncovered_topics` give the verdict directly):
 
 ```
 ==================================================
@@ -151,6 +151,21 @@ fully_covered: False           # not every original topic is entailed
 topics_covered: 4
 topics_total: 6
 uncovered_topics: ['Overview of computers and programming', 'overview of C']
+direction: coverage
+model: all-MiniLM-L6-v2
+==================================================
+Coverage — identical module (full coverage)
+==================================================
+composite_score: 100.0
+full_text_cosine: 100.0
+sentence_alignment: None
+sentence_alignment_used: False
+coverage_score: 100.0
+coverage_used: True
+fully_covered: True            # every original topic is entailed
+topics_covered: 6
+topics_total: 6
+uncovered_topics: []
 direction: coverage
 model: all-MiniLM-L6-v2
 ==================================================
@@ -299,7 +314,7 @@ analysis = compare_courses_with_llm(
 | | `CourseStatisticalComparer.py` | `CourseEmbeddingComparer.py` | `CourseLLMComparer.py` |
 |---|---|---|---|
 | **Output** | Numeric score (0–100) | Numeric score (0–100) | Qualitative text analysis |
-| **Speed** | Fast (local, no API) | Medium (local; first run downloads model) | Slower (external API call) |
+| **Speed** | Fast (local, no API) | Medium (local; first run downloads model — plus a cross-encoder model in coverage mode) | Slower (external API call) |
 | **LLM required** | No | No | Yes |
 | **Best for** | Keyword overlap / bulk screening | Semantic similarity | Deep qualitative review |
 
