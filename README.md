@@ -37,6 +37,8 @@ Encodes descriptions with a sentence-transformer model and blends two semantic s
 composite = 0.60 × full_text_cosine + 0.40 × sentence_alignment
 ```
 
+Sentence alignment is only computed when **both** descriptions have at least 2 detectable sentences. Otherwise it is skipped — `sentence_alignment` is `None`, `sentence_alignment_used` is `False`, and the composite falls back to `full_text_cosine` alone.
+
 All scores are on a **0–100 scale**. Default model: `all-MiniLM-L6-v2` (downloaded once, then cached locally).
 
 #### One-sided "coverage" mode
@@ -48,6 +50,7 @@ Pass `direction="coverage"` to score **one-sidedly** instead — *"are `first_te
 | Field | Meaning |
 |---|---|
 | `coverage_score` | Directional coverage of `first_text`'s topics by `second_text` (0–100). Becomes the `composite_score` when `direction="coverage"`. |
+| `coverage_used` | `True` when both texts yield at least one topic unit, so coverage was actually computed; `False` otherwise (the coverage fields then carry fallback values). |
 | `topics_covered` / `topics_total` | How many of the original topics are entailed above `coverage_threshold` (entailment probability, default `0.5`) — e.g. *4 of 6 covered*. |
 | `fully_covered` | `True` when **every** original topic is entailed above threshold (`topics_covered == topics_total`) — the direct yes/no for *"does `second_text` fully cover `first_text`?"* `False` whenever any topic is missing. |
 | `uncovered_topics` | The list of original topics (from `first_text`) with **no** entailment above threshold in `second_text` — i.e. exactly what the other description is missing. Empty when `fully_covered` is `True`. |
