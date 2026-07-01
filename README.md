@@ -322,7 +322,7 @@ analysis = compare_courses_with_llm(
 
 ## Interpreting Scores
 
-*(Applies to the statistical and embedding comparers.)*
+*(Applies to the statistical comparer, and to the embedding comparer in its default **symmetric** mode.)*
 
 | Composite Score | Interpretation |
 |---|---|
@@ -330,3 +330,5 @@ analysis = compare_courses_with_llm(
 | 60–79 | Moderate overlap — shared themes with notable differences |
 | 40–59 | Weak overlap — related subject area but distinct focus |
 | 0–39 | Low similarity — likely different courses |
+
+In **coverage** mode (`direction="coverage"`) the composite is a *directional coverage percentage* — the share of `first_text`'s topics covered by `second_text`, not a mutual-similarity score. Read the bands as "how much of the original is covered" (e.g. 80–100 = nearly all original topics covered), and rely on `fully_covered` / `uncovered_topics` for the exact verdict.
